@@ -1,0 +1,87 @@
+---
+title: "HIERARCHICAL_CLUSTERING"
+author: "R Akhilandeshwari"
+date: "4/9/2021"
+output: html_document
+---
+
+```{r}
+setwd('C:/Desktop/R/HIERARCHICAL CLUSTERING')
+getwd()
+```
+
+```{r}
+library("readxl")
+data<-read_excel("seeds_dataset.xlsx")
+head(data)
+```
+
+```{r}
+feature_name <- c('area','perimeter','compactness','length.of.kernel','width.of.kernal','asymmetry.coefficient','length.of.kernel.groove','type.of.seed')
+colnames(data) <- feature_name
+head(data)
+```
+
+```{r}
+str(data)
+```
+
+```{r}
+summary(data)
+```
+
+```{r}
+any(is.na(data))
+```
+
+```{r}
+seeds_label <- data$type.of.seed
+data$type.of.seed <- NULL
+str(data)
+```
+
+```{r}
+seeds_df_sc <- as.data.frame(scale(data))
+summary(seeds_df_sc)
+```
+
+```{r}
+dist_mat <- dist(seeds_df_sc, method = 'euclidean')
+```
+
+```{r}
+hclust_avg <- hclust(dist_mat, method = 'average')
+plot(hclust_avg)
+```
+
+```{r}
+plot(hclust_avg)
+rect.hclust(hclust_avg , k = 3, border = 2:6)
+abline(h = 3, col = 'red')
+```
+
+```{r}
+library(dendextend)
+avg_dend_obj <- as.dendrogram(hclust_avg)
+avg_col_dend <- color_branches(avg_dend_obj, h = 3)
+plot(avg_col_dend)
+```
+
+```{r}
+suppressPackageStartupMessages(library(dplyr))
+cut_avg <- cutree(hclust_avg, k = 3)
+seeds_df_cl <- mutate(data, cluster = cut_avg)
+count(seeds_df_cl,cluster)
+```
+
+```{r}
+suppressPackageStartupMessages(library(ggplot2))
+ggplot(seeds_df_cl, aes(x=area, y = perimeter, color = factor(cluster))) + geom_point()
+```
+
+```{r}
+table(seeds_df_cl$cluster,seeds_label)
+```
+#link refered: https://www.datacamp.com/community/tutorials/hierarchical-clustering-R
+
+

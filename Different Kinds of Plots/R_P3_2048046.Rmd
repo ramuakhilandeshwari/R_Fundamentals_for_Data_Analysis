@@ -1,0 +1,83 @@
+---
+title: "R_P3_2048046"
+author: "R Akhilandeshwari"
+date: "1/29/2021"
+output: word_document
+---
+
+```{r}
+setwd("C:/Desktop/R/P3")
+getwd()
+```
+1.Import the LungCapData into R and attach it
+```{r}
+library("readxl")
+data<-read_excel("Lungcap.xlsx")
+data
+```
+2. Find the class and typeof Age and Height 
+```{r}
+typeof(data$Age)
+class(data$Height)
+```
+3. Find the summary of the dataset
+```{r}
+summary(data)
+```
+4.Find the strength of the relationship between Age and Height (Hint:Using  Correlation)
+```{r}
+cor(data$Age,data$Height)
+```
+5.Perform a scatterplot for the above (Qn.4)
+```{r}
+plot(data$Age,data$Height)
+```
+6. Add a title to the plot and Label  x-axis and y-axis
+```{r}
+plot(data$Age,data$Height,xlab="AGE OF PATIENT",ylab="HEIGHT OF PATIENT",main="AGE Vs HEIGHT")
+```
+7.Rotate the values on the y-axis and also change the limits of x-axis and y-axis
+```{r}
+library(ggplot2)
+pl<-ggplot(data,aes(Age, y=Height)) + geom_point()
+pl+theme(axis.text.y = element_text(angle=60))+scale_x_continuous(limits = c(2, 20))+scale_y_continuous(limits = c(20, 100))
+```
+8.  Remove the axes of the plot and relabel these axes
+```{r}
+pl+theme(axis.text.x = element_blank(),
+         axis.ticks.x = element_blank(),
+         axis.text.y = element_blank(),
+         axis.ticks.y = element_blank())+labs(x="AGE OF PATIENT",y="HEIGHT OF PATIENT")
+```
+9.Change the size of the plotting characters
+```{r}
+pl+geom_point(size=8)
+```
+
+10.Change the color of the characters to red
+```{r}
+pl+theme(axis.title.x = element_text(colour = "red"),
+          axis.title.y = element_text(colour = "green"))
+```
+11.Draw the regression line to the plot predicting height using age
+```{r}
+pl+geom_smooth(method=lm)
+```
+12.Change the color of the line to blue and the width of the line
+```{r}
+pl+geom_smooth(method=lm,size=2.3,color="blue") 
+```
+13.Change the font of the plotting characters
+```{r}
+windowsFonts(A = windowsFont("Times New Roman")) 
+pl+theme(text=element_text(family="A", face="bold", size=12))
+```
+
+14.Change  the color of the plotting characters
+```{r}
+pl+geom_point(color="red")
+```
+15.Identify gender on the plot for the age male and female 
+```{r}
+pl + geom_point(aes(shape=factor(Gender),colour=factor(Gender)))
+```

@@ -1,0 +1,205 @@
+---
+title: "R_P4_2048046"
+author: "R Akhilandeshwari"
+date: "2/5/2021"
+output: word_document
+---
+
+```{r}
+setwd("C:/Desktop/R/P4")
+getwd()
+```
+1.Import the dataset data_marketing_budget_mo12 and do the exploratory data analysis.
+```{r}
+mark=read.csv('data-marketing-budget.csv')
+mark
+```
+**Finding the null values in the data**
+```{r}
+complete.cases(mark)
+```
+**This implies we donnot have null values in the given data**
+
+**Knowing abt the summary of the data**
+```{r}
+summary(mark)
+```
+**In marketing We spend minimum Rs.1000 with the minimum sales of Rs.9,914**
+**In marketing We spend maximum Rs.15000 with the minimum sales of Rs.1,58,484 **
+**The average amount spent is Rs.6542 with an average sales of Rs.70,870**
+
+2. Use Scatter Plot To Visualize The Relationship
+```{r}
+library(ggplot2)
+r<-ggplot(mark,aes(Sales, y=Spend)) + geom_point(color="blue",size=3)
+r+geom_smooth(method=lm,size=.8,color="red")+labs(y="Amount Spent per month",x="Sales per month")+theme(axis.title.x = element_text(colour = "green"),axis.title.y = element_text(colour = "green"))
+```
+
+3.Using BoxPlot To Check For Outliers
+```{r}
+boxplot(mark$Spend,main="Amount spent per month")
+```
+
+```{r}
+boxplot(mark$Sales,main="Sales per month")
+```
+**There are no outliers in our data**
+
+4. Using Density Plot To Check If Response Variable Is Close To Normal.
+```{r}
+library(e1071)  # for skewness function
+#par(mfrow=c(1,2))  # divide graph area in 2 columns
+plot(density(mark$Spend), main="Density Plot: Spend", ylab="Frequency",sub=paste("Skewness:",round(e1071::skewness(mark$Spend),2))) 
+polygon(density(mark$Spend), col="blue")
+```
+**The skewness of the graph is 0.6 which is greater than 0. So, the data is positively skewed and it follows Platykurtic distribution.**
+
+5. Check the Correlation Analysis
+```{r}
+cor(mark$Spend,mark$Sales)
+```
+**The amount spent and sales are highly positively correlated**
+
+6. Build the Linear Regression Model
+```{r}
+model=lm(Spend~Sales,mark)
+model
+```
+**The regression line with the data is of the form Spend = 0.093sales -114.67. The per unit spend is increased by 0.09392times in the sales.**
+
+7. Using p-value Check For Statistical Significance
+**P-value Significance**
+**Null Hypothesis: The model is not significant**
+**Alternative Hypothesis: The model is significant**
+```{r}
+sum_report=summary(model)
+sum_report
+```
+
+**ModelCoefficients**
+```{r}
+modelCoeffs <- sum_report$coefficients  
+print(modelCoeffs)
+```
+**Estimated Amount to be spent**
+```{r}
+estimate=modelCoeffs["Sales","Estimate"]
+estimate
+```
+**Standard_Error**
+```{r}
+se=modelCoeffs["Sales","Std. Error"]
+se
+```
+
+**t-statistic**
+```{r}
+t=estimate/se
+t
+```
+
+```{r}
+p<-2*pt(-abs(t),df=length(mark$Sales)-1)
+p
+```
+**The p-value is less than 0.05. So, we reject null hypothesis. Therefore, the model is significant**
+
+
+8.Capture the summary of the linear model
+```{r}
+sum_report
+```
+
+9. Also perform the Linear Diagnostics for the given data set(Hint:plot(lmmodel))
+```{r}
+#broom: creates a tidy data frame from statistical test results
+library(broom) 
+model.diag.metrics <- augment(model)
+head(model.diag.metrics)
+```
+```{r}
+ggplot(model.diag.metrics, aes(Sales,Spend)) +
+  geom_point() +
+  stat_smooth(method = lm, se = FALSE) +
+  geom_segment(aes(xend = Sales, yend = .fitted), color = "red", size = 0.3)
+```
+**We can notice the residual error is very small**
+
+##Create the diagnostic plots using ggfortify
+```{r}
+library(ggfortify)
+autoplot(model)
+```
+
+```{r}
+#Residual Vs Fitted Value
+plot(model, 1)
+```
+**As the data is spread across without following any pattern, we can say that the regression model is best fit. 
+```{r}
+#Normal Q-Q plot
+plot(model, 2)
+```
+**The sales on the spend is linearly related.**
+```{r}
+#Scale location @Heterosadasticity  or homosedasticity
+plot(model, 3)
+```
+**As the residuals are equally distributed and the red line is horizontal. Hence, the variance is equal for the data i.e., data is homosedasticity.**
+
+```{r}
+#Finding the Cook's distance
+plot(model, 4)
+```
+```{r}
+#Residual Vs Leverage
+plot(model, 5)
+```
+**By removing the 9th observation we may have great impact on the residual error.**
+
+10. Create the training and test data (70:30)
+```{r}
+set.seed(100) 
+split_dummy <- sample(c(rep(0, 0.7 * nrow(mark)),  rep(1, 0.3 * nrow(mark))))
+data_train <- mark[split_dummy==0,] 
+data_test<-mark[split_dummy==1, ]
+data_test
+```
+
+10. Fit the model on training data and predict sales on test data
+```{r}
+lin_mod=lm(Spend~Sales,data=data_train)
+pred=predict(lin_mod,data_test)
+pred
+```
+
+```{r}
+library(caret)
+cat("MAE",MAE(pred, actual),"\n")
+cat("RMSE",RMSE(pred, actual),"\n")
+```
+
+```{r}
+confusionMatrix(pred,data_test)
+```
+
+```{r}
+library(gmodels)
+#Computes the crosstable calculations
+CrossTable(actual,pred)
+```
+**The linear model build is of the form Spend=0.9226Sales+20.52966. The per unit spend is increased by 0.922times in the sales. **
+11.Review the diagnostic measures
+```{r}
+#sum_report
+summary(lin_mod)
+```
+**The R2 is 0.997 which is good indicator of the fitted model. The linear regression model is the best fit for the given data.Moreover, the p-value high significance relationship between the spend and sale. And even the F-statistic value is 2584 for 1 which implies, a perfect good relationship between the spend and sales.  **
+
+```{r}
+autoplot(lin_mod)
+```
+ 
+**It is similar to the previous model built. Implies the Spend is positively and highly related with the Sales, and they maintain a good positive relation. And there is only one point which have significant effect on the variables with respect to the residuals Vs Leverage plot we can indicate this. As the point in the plane are scattered throughout in horizontal plan(Scale-Location), the variance is less. **
+
+

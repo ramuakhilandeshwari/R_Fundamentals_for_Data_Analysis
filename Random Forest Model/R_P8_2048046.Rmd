@@ -1,0 +1,126 @@
+---
+title: "R_P8_2048046"
+author: "R Akhilandeshwari"
+date: "3/19/2021"
+output: html_document
+---
+
+#Demonstrate step by step procedure of  Random Forest using R choosing any Data Set of your choice
+
+**Setting the Directory**
+```{r}
+setwd('C:/Desktop/R/P8')
+getwd()
+```
+**Loading the data**
+```{r}
+d<-read.csv('BankChurners.csv')
+#fb<-read.csv('pseudo_facebook.csv')
+tail(d) 
+```
+
+**Understanding the data**
+```{r}
+str(d)
+```
+**There are 23 attributes in the data with 10127 observations in our data.**
+
+
+**Checking the Null values in the data**
+```{r}
+colSums(is.na(d))
+```
+**There are no null values data **
+
+```{r}
+library(dplyr)
+d<-select(d, -c(CLIENTNUM))
+```
+
+**Converting the factor to numeric format**
+```{r}
+d$Attrition_Flag<- as.character(d$Attrition_Flag )
+d$Attrition_Flag[d$Attrition_Flag=="Existing Customer"]<-1
+d$Attrition_Flag[d$Attrition_Flag=="Attrited Customer"]<-0
+d$Attrition_Flag <- as.numeric(d$Attrition_Flag)
+typeof(d$Attrition_Flag)
+unique(d$Attrition_Flag)
+```
+
+```{r}
+library("ggplot2")
+d$Gender<-as.factor(d$Gender)
+ggplot(d,aes(x=Credit_Limit ,y=Avg_Utilization_Ratio ,color=Gender))+geom_point()+labs(title="Credit Limit Vs AVG utilization Ratio ")
+```
+
+
+```{r}
+#install.packages("randomForest")
+library(randomForest)
+```
+
+```{r}
+#make this example reproducible
+set.seed(10000)
+sd <-sample(2,nrow(d),replace = T,prob = c(0.6, 0.4))
+sd.dev <- d[sd==1,]
+sd.val <- d[sd==2,]
+
+#fit the random forest model
+model <- randomForest(formula = Attrition_Flag ~ .,data = sd.dev)
+
+model
+```
+
+```{r}
+#find number of trees that produce lowest test MSE
+which.min(model$mse)
+```
+```{r}
+#find RMSE of best model
+sqrt(model$mse[which.min(model$mse)]) 
+```
+**The average difference between the actual and predicted might be 2.600447e-15**
+
+```{r}
+#plot the test MSE by number of trees
+plot(model)
+```
+
+```{r}
+#Predicting
+pred=round(predict(model,sd.val))
+tail(pred)
+```
+
+```{r}
+library(caret)
+actual<-sd.val$Attrition_Flag
+cat("MAE",MAE(pred, actual),"\n")
+cat("RMSE",RMSE(pred, actual),"\n")
+```
+```{r}
+library(ROCR)
+ROCRpred <- prediction(pred,actual)
+ROCRperf <- performance(ROCRpred, measure = "tpr", x.measure = "fpr")
+
+plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2,1.7), print.cutoffs.at = seq(0,1,0.1))
+```
+```{r}
+auc<-performance(ROCRpred,measure="auc")
+auc<-auc@y.values[[1]]
+auc
+```
+**The model is 100% Accurate for predicting whether the customer is existing or churned customer**
+
+
+**Source: **
+*https://www.guru99.com/r-random-forest-tutorial.html#1*
+*https://www.statology.org/random-forest-in-r/*
+
+
+
+
+
+
+

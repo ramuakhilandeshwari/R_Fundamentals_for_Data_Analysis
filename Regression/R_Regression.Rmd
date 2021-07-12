@@ -1,0 +1,110 @@
+---
+title: "R_P7_2048046"
+author: "R Akhilandeshwari"
+date: "3/15/2021"
+output: html_document
+---
+
+*1.Download the dataset BOSTON.csv*
+```{r}
+setwd('C:/Desktop/R/P7')
+#library(MASS)
+boston=read.csv("boston.csv")
+head(boston)
+```
+```{r}
+str(boston)
+```
+```{r}
+colSums(is.na(boston))
+```
+**There are no mssing values in the data**
+```{r}
+colSums(boston=='')
+```
+**The data doesn't contains NA values**
+
+*2.MEDV is the output /target variable i.e price of the house to be predicted*
+```{r}
+pred = boston["MEDV"]
+head(pred)
+```
+
+*3. Using the plot commands, plot the latitude and longitude of each of our census tracts*
+```{r}
+library("ggplot2")
+boston$CHAS<-as.factor(boston$CHAS)
+ggplot(boston,aes(x=LON,y=LAT,color=CHAS))+geom_point()+labs(title="Latitude & Longitude of Census Tracts")
+```
+4. Show all the points that lie along the Charles River in a blue colour.
+```{r}
+library("dplyr")
+ch_1<-boston%>%
+filter(CHAS==1)
+ggplot(ch_1,aes(x=LON,y=LAT))+geom_point(color="blue")+labs(title="Charles River",x="Longitude",y="Latitude")
+```
+```{r}
+plot(boston$LON, boston$LAT, main = "Charles River in a blue colour",  xlab="Longitude", ylab="Latitude", col="#bbbbbb", pch=20, cex= 0.7)
+points(boston$LON[boston$CHAS==1], boston$LAT[boston$CHAS==1], col="#005fba", pch=16)
+```
+5.Apply Linear Regression by plotting the relationship between latitude and house prices and the longitude and the house prices.
+```{r}
+ggplot(data=boston,aes(x=LON,y=MEDV))+geom_smooth(method="lm")+labs(title="Longitude & House Prices")
+```
+```{r}
+ggplot(data=boston,aes(x=LAT,y=MEDV))+geom_smooth(method="lm")+labs(title="Latitude & House Prices")
+```
+```{r}
+latlonlm = lm(MEDV ~ LAT + LON, data=boston)
+summary(latlonlm)
+```
+**The regression equation is MEDV=-40.268LON+8.046LAT-3178.472 The value of adjusted Rˆ2 is 0.1072 which means the model can explani 10.72% variability in MEDV.**
+
+6.Apply Regression Tree to the problem and draw conclusions from it.
+```{r}
+ggplot(data=boston)+geom_density(aes(x=MEDV))+labs(title="Distribution Plot of MEDV")
+```
+**The pllot iss normally distributed, which is slightly left skewed**
+
+```{r}
+set.seed(155)
+spts=sample(1:nrow(boston),0.7*nrow(boston))#70% Training Data
+train<-boston[spts,]
+test<-boston[-spts,]
+```
+
+```{r}
+linreg = lm(MEDV ~ LAT + LON + CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO, data=train)
+summary(linreg)
+```
+```{r}
+linreg.pred = predict(linreg, newdata=test)
+linreg.sse = sum((linreg.pred - test$MEDV)^2)
+linreg.sse
+```
+```{r}
+library(rpart)
+library(rpart.plot)
+library(caTools)
+```
+
+```{r}
+tree = rpart(MEDV ~ LAT + LON + CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO, data=train)
+prp(tree)
+```
+```{r}
+summary(tree)
+```
+```{r}
+predicted<-predict(tree,test)
+#install.packages("Metrics")
+library(Metrics)
+actual<-test$MEDV
+rmse(actual,predicted)
+```
+```{r}
+predict1<-predict(tree)
+actual1<-train$MEDV
+rmse(actual1,predict1)
+```
+
