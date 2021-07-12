@@ -1,0 +1,105 @@
+---
+title: "MVA_MANOVA"
+author: "R Akhilandeshwari"
+date: "3/16/2021"
+output: html_document
+---
+
+```{r}
+setwd('C:/Desktop/MVA/MANOVA')
+getwd()
+```
+```{r}
+#install.packages("car")
+library(car)
+```
+
+```{r}
+data("Baumann")
+attach(Baumann)
+Baumann
+```
+```{r}
+summary("Baumann")
+```
+```{r}
+group=factor(group)
+group
+```
+```{r}
+Y=cbind(post.test.1,post.test.2,post.test.3)
+head(Y)
+```
+```{r}
+Baumann.manova=manova(Y~group)
+```
+```{r}
+summary(Baumann.manova)
+```
+
+```{r}
+summary(Baumann.manova, test ="Wilks")
+```
+```{r}
+summary(Baumann.manova, test ="Pillai")
+```
+```{r}
+summary(Baumann.manova, test = "Hotelling-Lawley")
+```
+```{r}
+summary(Baumann.manova, test = "Roy")
+```
+
+##TWO WAY MANOVA
+```{r}
+data("Soils")
+attach(Soils)
+View(Soils)
+```
+```{r}
+#install.packages("MASS")
+library(MASS)
+```
+
+```{r}
+summary(Soils)
+```
+```{r}
+Contour <- factor("Contour") 
+Contour
+```
+
+```{r}
+Depth <- factor("Depth")
+Depth
+```
+
+```{r}
+Soil.model <- lm(cbind(pH,Dens,Conduc)~Contour *Depth *Contour*Depth *1,data=Soils)
+summary(Soil.model)
+```
+
+```{r}
+Soil.model1 <- lm(cbind(pH,Dens,Conduc)~Contour *Depth *Contour*Depth -1,data=Soils)
+summary(Soil.model1)
+```
+
+
+```{r}
+Manova(Soil.model1, multivariate=TRUE,type= c("III"),test=("Pillai"))
+```
+
+```{r}
+Manova(Soil.model1, multivariate=TRUE, type= c("III"), test=("Wilks"))
+```
+
+```{r}
+Manova(Soil.model1, Multivariate=TRUE, type = c("II"), test=("Pillai"))
+```
+
+```{r}
+Manova(Soil.model1, multivariate=TRUE, type = c("II"), test=("Wilks"))
+```
+```{r}
+Manova(Soil.model1,test=("Pillai"))
+```

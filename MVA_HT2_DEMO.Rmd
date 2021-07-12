@@ -1,0 +1,85 @@
+---
+title: "HOTELLING'S T2 TEST"
+author: "R Akhilandeshwari"
+date: "3/12/2021"
+output: html_document
+---
+
+```{r}
+#install.packages("mvnormtest")
+library(mvnormtest)
+#install.packages("Hotelling")
+library("Hotelling")
+#install.packages("ICSNP")
+library(ICSNP)
+```
+
+```{r}
+setwd('C:/Desktop/MVA/HT2')
+library("readxl")
+dt<-read_excel("TURTILE.xlsx")
+head(dt)
+```
+
+```{r}
+turtile1<-dt[which(dt$group=='female'),c(1,2,3)]
+turtile2<-dt[which(dt$group=='male'),c(1,2,3)]
+```
+
+```{r}
+hotelling.stat(turtile1,turtile2)
+HotellingsT2(turtile1,turtile2)
+```
+##As P-value is less than 0.05, so we reject null hypothesis. Therefore, the group have significance effect of the mean vectors of the charateristics
+
+```{r}
+?mshapiro.test
+```
+```{r}
+#Normality Test
+mshapiro.test(t(turtile1))
+```
+
+```{r}
+mshapiro.test(t(turtile2))
+```
+#OTHER DATASET
+
+```{r}
+library("readxl")
+dd<-read_excel("dd.xlsx")
+head(dd)
+```
+
+
+```{r}
+dd1<-dd[which(dd$Group==1),c(1,2,3)]
+dd2<-dd[which(dd$Group==2),c(1,2,3)]
+```
+
+```{r}
+hotelling.stat(dd1,dd2)
+HotellingsT2(dd1,dd2)
+```
+
+##As P-value is less than 0.05, so we reject null hypothesis. Therefore, the group have significance effect of the mean vectors of the charateristics
+
+```{r}
+mshapiro.test(t(dd1))
+```
+```{r}
+mshapiro.test(t(dd2))
+```
+```{r}
+?bartlett.test
+```
+
+```{r}
+bartlett.test(dd1)
+```
+```{r}
+bartlett.test(dd2)
+```
+```{r}
+bartlett.test(dd)
+```

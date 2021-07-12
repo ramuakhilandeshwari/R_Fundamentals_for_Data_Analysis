@@ -1,0 +1,76 @@
+---
+title: "TWO_WAY_MANOVA"
+author: "R Akhilandeshwari"
+date: "3/17/2021"
+output: html_document
+---
+
+```{r}
+library(car)
+data("Soils")
+attach(Soils)
+View(Soils)
+```
+```{r}
+#install.packages("MASS")
+library(MASS)
+```
+
+```{r}
+?Soils
+```
+
+
+```{r}
+summary(Soils)
+```
+```{r}
+str(Soils)
+```
+*All the given attributes are in numeric type except group.contour,depth,gp, block which are in Factor type*
+
+```{r}
+levels(Soils$Group)
+```
+
+```{r}
+levels(Soils$Contour)
+```
+```{r}
+levels(Soils$Depth)
+```
+```{r}
+levels(Soils$Gp)
+```
+```{r}
+levels(Soils$Block)
+```
+*There are 12 groups of soil varities at 3 Contour with 4 different depth bins. The soil type is classified to 4 blocks and there are 12 different Gp*
+
+
+```{r}
+Soil.model <- lm(cbind(pH,N,P,Ca)~Contour *Depth *1,data=Soils)
+summary(Soil.model)
+```
+*The depth 30-90 have significant impact on the Ph value of the soil whereas the depth 10-30 have least significant impact.*
+
+*The depth 10-90 have significant on the Nitrogen value of the soil whereas the Contour Slope has least significant impact.*
+
+*The depth 10-90 and the contour slope, top have the significant impact on the Phosphorous value of the soil.*
+
+*The depth 10-90 have significant on the Calcium value of the soil whereas the Contour Top has least significant impact.*
+
+```{r}
+Manova(Soil.model, multivariate=TRUE, type= c("III"), test=("Wilks"))
+```
+*For the type III  Wilks MANOVA test the p-value less than 0.05. Therefore, there is significant impact of the contour and the depth of the soils in its PH,N,P,Ca values*
+
+
+```{r}
+Manova(Soil.model, multivariate=TRUE, type = c("II"), test=("Wilks"))
+```
+*For the type II  Wilks MANOVA test the p-value less than 0.05. Therefore, there is significant impact of the contour and the depth of the soils in its pH,N,P,Ca values*
+
+
+
+*Inference: The Contour and the depth of the soil have the impact on the differences in the pH,N,p,Ca levels of soil.*
