@@ -1,0 +1,313 @@
+---
+title: "RA_CIA3_2048046"
+author: "R Akhilandeshwari"
+date: "4/15/2021"
+output:
+  word_document: default
+  html_document: default
+---
+<br>
+<br>
+<br>
+
+# SETTING THE WORKING DIRECTORY
+```{r}
+setwd("C:/Desktop/RA/")
+getwd()
+```
+<br>
+
+# LOADING THE DATASET
+```{r}
+library("readxl")
+data<-read_excel("YIELD.xlsx")
+data
+```
+
+```{r}
+#Substituting the space with underscore
+colnames(data) <- gsub(" ", "_", colnames(data))
+colnames(data)
+```
+
+
+*I am trying to build the multi linear regression model relatively with the yield(y) corresponding to pressure(x1), temp(x2), moisture(x3), flow rate(x4) and particle size(x5).*
+```{r}
+constant=rep(1,16)
+constant
+```
+
+*Adding the constant column to the dataset*
+```{r}
+d=data.frame(constant,data)
+d
+```
+
+*Considering only the predddictor variables along with the constant*
+```{r}
+S <- d[,-c(7)]
+S
+```
+
+*Extracting the Y from the data*
+```{r}
+y <- d[,c(7)]
+Y <- data.matrix(y)
+Y
+```
+
+*Converting the subset to the matrix format*
+```{r}
+X<-data.matrix(S)
+X
+```
+
+## The multi linear regression model with 5 independent variables can be given by using the ffollowing formula
+<br>
+# b=[Inverse(X'X)]X'Y 
+<br>
+*Calculating the b value*
+```{r}
+# Calculating the [Inverse(X'X)]
+e <- t(X)
+
+a <- e %*% X
+
+# Calculating the inverse of the matrix
+c<-solve(a)
+
+# Calculating the X'Y
+de <- e %*% Y
+
+#Calculating the final b value
+b <- c %*% de
+b
+```
+
+# The multi linear regression model with least square fits is as follows 
+<br>
+
+*Yield = 52.07905 +  0.0555556 Pressure + 0.281429 Temp + 0.1250000 Moisture + 0.000 Flowrate - 16.06498 Particle_size*  
+<br>
+
+*Ycap = 52.07905 + 0.0555556 X1 + 0.281429 X2 + 0.1250000 X3 + 0.000 X4 - 16.06498 X5*
+<br>
+<br>
+# Calculating the Estimated Yield value
+```{r}
+#Ycap = 52.07905 + 0.0555556 X1 + 0.281429 X2 + 0.1250000 X3 + 0.000 X4 - 16.06498 X5
+d['y_est'] <- (52.07905*d[1]) + (0.0555556*d[2]) + (0.281429*d[3]) + (0.1250000*d[4]) + (0 * d[5]) - (16.06498*d[6])
+
+d['y_est']
+```
+
+*Verifying whether the sum of the erros is equal to zero or not*
+<br> 
+ <center> 
+*Error= Y - y_est*
+</center>
+```{r}
+d['Error']<- d[7] - d[8]
+sum(d['Error'])
+```
+*The sum of the errors is approximately equal to zero i.e., 0.684. Therefore, the condition for least square estimates which states the sum of the error is equal to zero i.e.,  is satisfied. *
+
+<br>
+
+# Constructing the ANOVA table to test the significance of MLRM (Multiple Linear Regression Model) 
+
+## The formula used are :-
+### TSS = Y'Y - n*Y_mean^2
+### SSR = b'X'Y - n*Y_mean^2
+### SSE = Y'Y - b'X'Y
+
+<br>
+## In our data n=16
+
+```{r}
+#Calculating the mean of Y
+Y_mean<- mean(Y)
+#The mean of yield is 54.25
+#Calculating  Y'Y
+L <- t(Y) %*% Y
+
+#Calculating b'X'Y
+M <- t(b) %*% t(X) %*% Y
+
+# Calculating TSS = Y'Y - n*Y_mean^2
+TSS <- L - 16*(Y_mean^2)
+
+# Calculating SSR = b'X'Y - n*Y_mean^2
+SSR <- M - 16*(Y_mean^2)
+
+# Calculating SSE = Y'Y - b'X'Y
+SSE <- L - M
+
+# Calculating the Mean Sum of Squares of Regressors
+#  Mean_SSR <- SSR/(Degree of freedom of regression)
+Mean_SSR <- SSR/(5-1)
+
+# Calculating the Mean Sum of Squares of Errors
+#  Mean_SSE <- SSE/(Degree of freedom of Errors)
+Mean_SSE <- SSE/(16-5)
+
+# Calculating the F-ratio for evaluating the performance of the model 
+## F-ratio = Mean_SSR / Mean_SSE
+#Calculating the F-ratio
+F_ratio <- Mean_SSR / Mean_SSE
+F_ratio
+```
+
+## finding the F-tabular value at 0.05 level of significance and (4,11)
+```{r}
+qf(.95, df1=4, df2=11) 
+```
+# We can see that the F-ratio is greater than the F-tabulated value. This implies that there is atleast one regressor whose coefficient is 0. The model is significant.
+
+<br>
+
+# Checking the significance of each regressor for the model using the t-satistic
+<br>
+*t=bi/SE(bi)*
+<br>
+*The SE(bi) can be calculated using the following formula*
+<br>
+*SE(bi)=sqrt(variance(ith diagonal element of inverse of X'X))*
+*The variance is calculated using follwoing formula*
+*variance=SSE/(n-k)*
+```{r}
+#Creating the dataframe tab
+tab <- data.frame(b)
+
+#Calculating the sigma^2 i.e., variance
+#variance <- SSE/(16-5)
+#Our variance value is 59.13636
+
+#The inverse of X'X is in the variable c
+diagonal <- diag(c)
+
+#Adding the diagonal element to tab
+tab['diagonal'] <- diagonal 
+
+#Addding a column that contains the SE of regressors
+tab['SE'] <- sqrt(59.13636*tab[2])
+
+#Calculating the t-stats value for each regressors
+tab['t-stats'] <- tab[1]/tab[3]
+
+#Calculating t-tabular value at (n-k) df, 0.05 level of significane
+#qt(.95,11)
+#The t-tabular value at 11df is 1.795885
+
+tab['t-tabular'] <- rep(1.795885,6)
+tab
+```
+
+*From the above table, we can see that the t-cal>t-tab for regressors b1,b2,b5. For regressors b3,b4 t-cal<t-tab. So, b1,b2,b5 are the significant regressors and b3,b4 are the in-significant regressors*
+
+# Calculating the R_sq value using the following formula
+## R_sq = SSR/TSS
+```{r}
+R_sq <- SSR/TSS
+R_sq
+```
+*The R_sq value is 0.9372286, this implies that the model is 93.723% highly determininstic model for the given set of predictor variables*
+<br>
+<br>
+
+## b0=2.079, suggests that the average yield  is 52.079 when other regresssorss are held constant
+
+<br>
+
+## b1=0.005 suggests that each unit of pressure adds 0.05 units of rise in yield when other regressors are held constant.
+
+<br>
+
+## b2=0.28 suggests that each unit of temp adds 0.28 units of rise in yield when other regressors are held constant.
+
+<br>
+
+## b3=0.125 suggests that each unit of moisture adds 0.125 units of rise in yield when other regressors are held constant.
+
+<br>
+
+## b4=0 suggests that the flow_rate has no effect on the yield
+
+<br>
+
+## b5=-16.0649 suggests that each unit of particle_size decreases 16.0649 units yiled production when other regressors are held constant.
+
+<br>
+<br>
+
+# Calculating the Adj_R_Sq uisng the formula
+## Adj_R_Sq = 1-(1-R_sq)((n-1)/(n-k))
+```{r}
+Adj_R_Sq = (1-(1-R_sq)*((16-1)/(16-5)))
+Adj_R_Sq 
+```
+*As the adjusted R^2 value is 0.9144 implies that there is 91.44% chances of variablity in the R^2 if the regressors are added or removed from the dataset.*
+<br>
+<br>
+# Calculating the Correlation coefficient using the formula
+## r=(sum(yi - mean_y)*(y_cap - mean_y))/sqrt((sum(yi - mean_y)^2)*(sum(y_cap - mean_y)^2)
+```{r}
+# Mean of Y is 54.25
+# Adding the column (Y - Y_mean) to d dataframe
+d['(Y - Y_mean)'] <- (d[7] - 54.25)
+
+#Adding the column (Y_cap - Y_mean) to d dataframe
+d['(Y_cap - Y_mean)'] <- (d[8] - 54.25)
+
+# Adding the column (Y - Y_mean)^2 to d dataframe
+d['(Y - Y_mean)^2'] <- d[10]^2
+
+#Adding the column (Y_cap - Y_mean)^2 to d dataframe
+d['(Y_cap - Y_mean)^2'] <- d[11]^2
+
+#Calculating the correlation between the observed and estimated yield values
+r <- sum(sum(d[10]*sum(d[11])))/sqrt(sum(d[12])*sum(d[13]))
+r
+
+```
+*The correlation between the observed and estimated yield values is undefined. Implies they are two disjoint and mutually exclusive*
+<br>
+*We can also check the relation between the observed and estimated yield using the scatter plot*
+```{r}
+plot(d$y_est,d$YIELD,xlab = "ESTIMATED YIELD VALUE", ylab = "OBSERVED YIELD VALUE", main = "ESTIMATED V/S OBSERVED", pch=10, col.main="red", col="blue",col.lab="brown")
+```
+
+<br>
+<br>
+
+# Calculating the Confidence interval for the regressors using the formula
+## bi-t(0.025,11)sqrt(variance(Ci))<=bi<=bi-t(0.025,11)sqrt(variance(Ci))
+```{r}
+#qt(.025,11)
+#The t-tab value at 95% is -2.200985
+tab
+#Adding the lower CI to tab
+tab['Lower_CI'] <- tab[1]-((-2.200985)*sqrt(59.13636*tab[2]))
+
+#Adding the Upper CI to tab
+tab['Upperr_CI'] <- tab[1]+((-2.200985)*sqrt(59.13636*tab[2]))
+
+tab
+```
+
+
+# ESTIMATED V/s RESIDUAL PLOT
+```{r}
+plot(d$y_est,d$Error,xlab = "ESTIMATED YIELD VALUE", ylab = "RESIDUAL", main = "ESTIMATED V/S RESIDUAL", pch=10, col.main="red", col="blue",col.lab="brown")
+```
+*In the Estimated V/s Residual plot the points are scattered in the random manner. So, the residual have the equal variance Moreover, the spread location is also random*
+
+
+
+
+
+
+
+
+
+
