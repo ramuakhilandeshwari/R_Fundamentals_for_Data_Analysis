@@ -1,0 +1,169 @@
+---
+title: "R_P9_2048046"
+author: "R Akhilandeshwari"
+date: "4/5/2021"
+output: html_document
+---
+
+```{r}
+setwd('C:/Desktop/R/P9')
+getwd()
+```
+
+```{r}
+#Installing the packages that we will work on
+
+#install.packages("NLP")
+#install.packages("tm")
+#install.packages("RColorBrewer")
+#install.packages("wordcloud")
+#install.packages("wordcloud2")
+
+library("NLP")
+library("tm")
+library("RColorBrewer")
+library("wordcloud")
+library("wordcloud2")
+```
+
+```{r}
+#Importing the text file 
+#IMPACT_COVID19_INDIAN_EDUCATION
+doc<-"IMPACT_COVID19_INDIAN_EDUCATION.txt"
+```
+
+```{r}
+#Read lines of doc using readLine() and storing it in text
+text_doc<- readLines(doc)
+text_doc
+```
+```{r}
+length(text_doc)
+```
+```{r}
+#Now we are using paste() function in text_doc and make it a chunk 
+#Then text_doc collapse into quotations (" ") and update it
+text_doc1 <- paste(text_doc, collapse = " ")
+length(text_doc1)
+```
+**After collapsing, we got the length of the data as 1**
+
+
+
+
+**Cleaning the Textual Data**
+```{r}
+#Converting the whole data to lowercase
+clean_text <- tolower(text_doc1)
+clean_text
+head(clean_text)
+```
+
+```{r}
+#Length of data, before removing the punctuations
+sapply(strsplit(clean_text, " "), length)
+```
+```{r}
+#Removing the puncuations using gsub()
+clean_text1 <- gsub(pattern = "\\W", replace =" " ,clean_text)
+sapply(strsplit(clean_text1, " "), length)
+```
+**After relacing the punctuations with white space our data count is 703.**
+
+```{r}
+#Removing the digits using the gsub()
+clean_text2 <- gsub(pattern = "\\d", replace = " ", clean_text1)
+sapply(strsplit(clean_text2, " "), length)
+```
+**After replacing the digits and symbol with whitespace, our data count is 771**
+
+```{r}
+#Removing the stop words
+stopwords()
+```
+**The above list of words are considered as the stop words in data. So, in order to exactly know the actual main text frequency, we will omit the stop words**
+
+```{r}
+#Finding the length of the data, before removing stopwords
+sapply(strsplit(clean_text2, " "), length)
+```
+
+```{r}
+clean_text3 <-removeWords(clean_text2,words=c(stopwords()))
+sapply(strsplit(clean_text3, " "), length)
+```
+**As the length the text remained same before and after applying the stopword(). This imples that, there are no stop words in the data**
+
+```{r}
+#Now let us remove single letters, by gsub() function
+clean_text4 <- gsub(pattern = "\\b[A-z]\\b{1}", replace = " ", clean_text3)
+sapply(strsplit(clean_text4, " "), length)
+```
+**Since we are eliminating the single letter and relacing it with space, our length have increased**
+
+```{r}
+#We are omitting the whitespace using stripWhitespace()
+clean_text5<-stripWhitespace(clean_text4)
+sapply(strsplit(clean_text5, " "), length)
+```
+**Before omitting the white space, the length of the text was 781 but after omitting the white space the length of the text is 571**
+
+
+
+**Properly formatting the text**
+```{r}
+#Splitting the individual words using strSplit()
+clean_text6 <- strsplit(clean_text5, " ")
+clean_text6
+```
+
+```{r}
+#Now create word_freq table using table()
+word_freq <- table(clean_text6)
+head(word_freq)
+```
+```{r}
+#Formatting properly
+word_freq1<-cbind(names(word_freq), as.integer(word_freq))
+head(word_freq1)
+```
+
+
+
+
+**Creating the Word Cloud**
+```{r}
+word_cloud <- unlist(clean_text6)
+wordcloud(word_cloud,random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+```
+
+
+
+```{r}
+wordcloud(word_cloud,min.freq = 3, max.words=1000, random.order=F, rot.per=0.2,
+colors=brewer.pal(5,"Dark2"), scale=c(4,0.2))
+```
+
+```{r}
+wordcloud2(word_freq,shape="pentagon")
+```
+
+```{r}
+wordcloud2(word_freq, color = "random-light", backgroundColor = "blue")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

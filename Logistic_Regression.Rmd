@@ -1,0 +1,142 @@
+---
+title: "R_P6_2048046"
+author: "R Akhilandeshwari"
+date: "2/26/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+1.Load mtcars dataset
+```{r}
+data(mtcars)
+head(mtcars)
+```
+
+2.install ridge and glmnet packages
+```{r}
+#install.packages("ridge")
+library(ridge)
+#install.packages("glmnet")
+library(glmnet)
+```
+
+3.Perform the exploratory data analysis
+```{r}
+?mtcars
+```
+**The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).**
+
+**This data frame has 32 observations on 11 (numeric) variables.**
+
+**[, 1]	mpg	Miles/(US) gallon**
+**[, 2]	cyl	Number of cylinders**
+**[, 3]	disp	Displacement (cu.in.) **
+**[, 4]	hp	Gross horsepower**
+**[, 5]	drat	Rear axle ratio**
+**[, 6]	wt	Weight (1000 lbs)**
+**[, 7]	qsec	1/4 mile time**
+**[, 8]	vs	Engine (0 = V-shaped, 1 = straight)**
+**[, 9]	am	Transmission (0 = automatic, 1 = manual)**
+**[,10]	gear	Number of forward gears **
+**[,11]	carb	Number of carburetors **
+
+```{r}
+str(mtcars)
+```
+**The mtcars dataset contains, 32 records with 11 attributes. All attributes are of numeric form **
+
+```{r}
+colSums(is.na(mtcars))
+```
+**There are no missing values in the mtcars dataset**
+
+```{r}
+colSums(mtcars==" ")
+```
+**None of the columns contain the empty values**
+
+
+
+```{r}
+boxplot(mtcars)
+boxplot(mtcars$hp)
+boxplot(mtcars$wt)
+boxplot(mtcars$qsec)
+```
+
+```{r}
+#install.packages("funModeling")
+library("funModeling")
+plot_num(mtcars)
+#hist(mtcars$hp)
+```
+
+```{r}
+#install.packages("GGally")
+library(GGally)
+ggcorr(mtcars, label = T)
+```
+**The mpg is negatively correlated to cyl,disp,hp,wt and carb. And its not highly  correlated to qsec. So, while predicting the mpg of the vechicle, I am excluding the qsec attribute**
+
+
+4. 
+
+```{r}
+#define response variable
+y <- mtcars$mpg
+
+#define matrix of predictor variables
+x <- data.matrix(mtcars[, c('cyl','disp','hp','drat','wt','vs','gear','carb')])
+```
+
+
+```{r}
+#fit ridge regression model
+model <- glmnet(x, y, alpha = 0)
+
+#view summary of model
+summary(model)
+```
+
+4.Choose optimum lambda value
+
+```{r}
+#perform k-fold cross-validation to find optimal lambda value
+cv_model <- cv.glmnet(x, y, alpha = 0)
+
+#find optimal lambda value that minimizes test MSE
+best_lambda <- cv_model$lambda.min
+best_lambda
+```
+**The lambda value that minimizes the test MSE turns out to be 1.893**
+
+```{r}
+#produce plot of test MSE by lambda value
+plot(cv_model) 
+```
+
+```{r}
+#find coefficients of best model
+best_model <- glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(best_model)
+```
+```{r}
+#produce Ridge trace plot
+plot(model, xvar = "lambda")
+```
+```{r}
+#use fitted best model to make predictions
+y_predicted <- predict(model, s = best_lambda, newx = x)
+
+#find SST and SSE
+sst <- sum((y - mean(y))^2)
+sse <- sum((y_predicted - y)^2)
+
+#find R-Squared
+rsq <- 1 - sse/sst
+rsq
+```
+**The R-squared turns out to be 0.8408. That is, the best model was able to explain 84.08% of the variation in the response values of the training data.**
+
+

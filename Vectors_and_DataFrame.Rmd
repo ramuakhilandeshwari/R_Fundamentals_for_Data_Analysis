@@ -1,0 +1,102 @@
+---
+title: "R_P2_2048046"
+author: "R Akhilandeshwari"
+date: "1/25/2021"
+output: word_document
+---
+
+1. Create a vector different data types(Logical, Numeric, Integer, Complex,Character) and display their class and typeof  each datatype.
+```{r}
+V_LOG <- c(TRUE, TRUE, FALSE, FALSE)
+class(V_LOG)
+V_NUM<-c(23.4, 8, 5.6, 3)
+class(V_NUM)
+V_INT<-c(8L,24L,33L,367)
+typeof(V_INT)
+V_COM<-c(1+3i, 2+4i)
+typeof(V_COM)
+V_CHAR<-c("SAILAJA","RAMU","KALPANA")
+typeof(V_CHAR)
+```
+
+2. Get and print the current working directory
+
+```{r}
+getwd()
+```
+```{r}
+setwd("C:/Users/akhil/OneDrive/Desktop/R/P2")
+```
+
+```{r}
+getwd()
+```
+3. Create this file using windows notepad by copying and pasting this data. Save the file as student.csv
+
+S.No ,Sname, Degree, Total.marks, Grade
+1,Andrew,UG,435,B
+2,Babita,UG,210,D
+3,Cathy,UG,459,A
+4,Dominic,UG,542,A
+5,Elsa,PG,520,B
+6,Franko,PG,320,C
+7,Gorang,UG,205,D 
+8,Harsha,PG,325,C
+
+4.Save this file in the  current working directory
+
+5.Read the csv file in your current working directory
+```{r}
+data<-read.csv("student.csv")
+data
+```
+6.Check whether your  CSV file is a dataframe and also check the number of rows and columns
+```{r}
+print(is.data.frame(data))
+print(ncol(data))
+print(nrow(data))
+```
+7. Apply all the functions sum(),mean(),sqrt()  related to dataframe
+```{r}
+sum(data$Total.marks)
+mean(data$Total.marks)
+sqrt(data$Total.marks)
+cor(data$S.No,data$Total.marks)
+var(data$Total.marks)
+sd(data$Total.marks)
+range(data$Total.marks)
+min(data$Total.marks)
+max(data$Total.marks)
+prod(data$Total.marks)
+```
+8.Get the highest marks from the data frame
+```{r}
+max(data$Total.marks)
+```
+9. Get the details of the person with highest marks
+```{r}
+subset(data, Degree == 'PG')
+```
+10. Get all the students in UG degree whose marks is greater than 300
+```{r}
+subset(data, Total.marks > 300)
+```
+11. Add one more vector  Date_ of_ Joining(DOJ)  to the already existing dataframe 
+```{r}
+data$DOJ<-c('2012-01-01','2017-01-01','2020-01-03','2018-01-15',
+            '2015-08-06','2017-01-01','2019-03-24','2017-05-17')
+data
+```
+12. Get the details of the students who have joined after 2017
+```{r}
+filt_data<-subset(data, as.Date(DOJ) > as.Date("2017-01-01"))
+filt_data
+```
+13. Write the filtered data into a new file
+```{r}
+write.csv(filt_data,"student_dupl.csv")
+```
+
+```{r}
+read.csv('student_dupl.csv')
+```

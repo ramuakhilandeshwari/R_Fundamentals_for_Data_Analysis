@@ -1,0 +1,91 @@
+---
+title: "r_p1"
+author: "R Akhilandeshwari"
+date: "1/22/2021"
+---
+
+```{r 1a}
+myobject<-seq(from=1 ,to=10, by=1) # Create a vector a
+print(myobject)
+```
+
+```{r 1b}
+myobject=1:10
+myobject
+```
+```{r 1c}
+myobject<-c(1,2,3,4,5,6,7,8,9,10)
+myobject
+```
+```{r 2}
+sum(myobject)
+```
+```{r 3a}
+a <-("R is great")
+b<-(" 4 and I will love it")
+c<-(" 7 and I will love it")
+d<-(" 44 and I will love it")
+paste0(a," ", b)
+```
+```{r 3b}
+paste0(a," ", c)
+```
+```{r 3c}
+paste0(a," ", d)
+```
+```{r 4}
+x4=c(1,2,3)
+x5=rep(x4,times=c(11,10,10))
+x5
+```
+```{r 5}
+x5[7]
+```
+```{r 6}
+rr=rep("Hello R",3)
+rr
+```
+```{r 7}
+c=rep(c(1,2),times=c(2,3))
+c
+```
+```{r 8}
+a=matrix(1:6, nrow = 2, ncol = 3)
+a
+```
+```{r 9}
+b=matrix(c(1,2,3,4,5,6,7,8,9),ncol=3,byrow=T)
+b
+```
+```{r 10a}
+eg=sample(1:100, 10, replace=TRUE)
+eg
+```
+```{r 10b}
+min(eg)
+```
+```{r 10c}
+max(eg)
+```
+```{r 10d}
+range(eg)
+```
+```{r 10e}
+length(eg)
+```
+```{r 10f}
+sum(eg)
+```
+```{r 10g}
+prod(eg)
+```
+```{r 10h}
+mean(eg)
+```
+```{r 10i}
+var(eg)
+```
+```{r eva1}
+x<-rep(c(1,2,3),c(3,3,3))
+x
+```

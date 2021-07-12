@@ -1,0 +1,197 @@
+---
+title: "R_P5_2048046"
+author: "R Akhilandeshwari"
+date: "2/20/2021"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+###1.Install the package “titanic”.
+```{r}
+#install.packages("titanic")
+library("titanic")
+```
+
+
+###2.Load Titanic library to get the dataset
+```{r}
+train=titanic_train
+test=titanic_test
+train
+test
+```
+```{r}
+str(train)
+```
+```{r}
+str(test)
+```
+**The train data contains 12 attributes with 891 observations**
+**The test data contains 11 attributes with 418 observations. The test data doesn't contains the survived attribute**
+
+
+###3.Set Survived column for test data to NA
+#Note: titanic_test$Survived <- NA
+```{r}
+test$Survived <- NA
+test$Survived
+```
+
+
+###4.Combine the  Training and Testing dataset
+#Note: complete_data <- rbind(titanic_train, titanic_test)
+```{r}
+titanic_data <- rbind(train,test)
+nrow(titanic_data)
+ncol(titanic_data)
+```
+**The titanic_data contains 12 attributes with 1309 records**
+
+
+###5.Get the data structure
+```{r}
+str(titanic_data)
+```
+
+###6. Check for any missing values in the data
+```{r}
+colSums(is.na(titanic_data))
+```
+**The Survived data contains 418 missing values, the Age contains 263 missing values and Fare contains 1 missing data**
+
+
+###7.Check for any empty values
+```{r}
+colSums(titanic_data=="")
+```
+**The survived coulmn, the age column, cabin, Embarked and fare contains empty values**
+
+
+###8.Check number of unique values for each column to find out which column we can convert to factors
+```{r}
+apply(titanic_data,2, function(x) length(unique(x)))
+```
+**We can see that the survived,Pclass contains 3 unique values. The Sex column contains 2 unique values, whereas the Embarked column contains 4 unique values.**
+
+###9.Remove Cabin as it has very high missing values, passengerId, Ticket and Name are not required
+```{r}
+TD<-subset(titanic_data,select=-c(Cabin,PassengerId,Ticket,Name))
+str(TD)
+```
+**As we have removed 4 columns from the data('i.e.,Cabin,PassengerId,Ticket,Name ), so now we have only 8 columns**
+
+
+###10.Convert "Survived","Pclass","Sex","Embarked" to factors
+```{r}
+cols<-c("Survived","Pclass","Sex","Embarked")
+for (i in cols)
+  {
+  TD[,i] <- as.factor(TD[,i])
+  }
+
+# Now lets look on the structure of the full data set
+str(TD)
+```
+
+```{r}
+cat("Survived levels:",levels(TD$Survived),"\n")
+cat("Passenger Levels:",levels(TD$Pclass),"\n")
+cat("Sex Levels:",levels(TD$Sex),"\n")
+cat("Embarked Levels:",levels(TD$Embarked),"\n")
+```
+
+#Checking wheather there are any missing values in the edited data
+```{r}
+colSums(is.na(TD))
+```
+**My target variable is Survived, it contains 418 missing values. Because these records are the one which are merged from test data. As the Age contains 263 missing values, let me fill it with mean value**
+```{r}
+TD$Age[is.na(TD$Age)] <- mean(TD$Age,na.rm=TRUE)
+sum(is.na(TD$Age))
+```
+**Therefore, there are no null values in the data,except for the Survived column.**
+
+```{r}
+#install.packages("tidyr")                        
+library("tidyr")
+TD <- TD %>% drop_na() 
+sum(is.na(TD))
+nrow(TD)
+```
+
+###11.Splitting training and test data
+```{r}
+set.seed(891)
+DD<-sample(c(rep(1,0.7*nrow(TD)),rep(0,0.3*nrow(TD))))
+tr<-TD[DD==1,]
+ts<-TD[DD==0,]
+```
+
+###12.Create a model 
+```{r}
+model <- glm(Survived ~.,family=binomial,data=tr)
+summary(model)
+```
+```{r}
+pred<-predict(model,ts,type="response")
+s_pred_num <- ifelse(pred > 0.5, 1, 0)
+s_pred <- factor(s_pred_num, levels=c(0, 1))
+s_pred
+```
+
+```{r}
+pscl::pR2(model)["McFadden"]
+```
+**As the value is less than 0.4 so, this model is not best fit for the prediction**
+
+```{r}
+caret::varImp(model)
+```
+**Attribute Embarkeds and Fare is not that important for model prediction**
+
+```{r}
+car::vif(model) #Checking for multicollinearity
+```
+**None of the attributes values is greater than 5. So, the given data doesn't suffer from multicollinearity**
+
+
+###13.Visualize the model summary
+```{r}
+library(rpart)
+library(rpart.plot)
+model_dt<- rpart(Survived ~.,data=tr)
+rpart.plot(model_dt)
+```
+
+###14.Analyse the test of deviance using anova()
+#Note: anova(model, test="Chisq")
+```{r}
+anova(model, test="Chisq")
+```
+
+###15.Compute confusion matrix and ROC curve
+```{r}
+library(caret)
+confusionMatrix(s_pred,ts$Survived)
+```
+
+
+```{r}
+library(ROCR)
+ROCRpred <- prediction(pred, ts$Survived)
+ROCRperf <- performance(ROCRpred, measure = "tpr", x.measure = "fpr")
+
+plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2,1.7), print.cutoffs.at = seq(0,1,0.1))
+```
+```{r}
+auc<-performance(ROCRpred,measure="auc")
+auc<-auc@y.values[[1]]
+auc 
+```
+**Therefore, the prediction model is 84% correctly categorizing the data**
+
+
+
