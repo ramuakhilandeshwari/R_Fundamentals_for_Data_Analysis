@@ -1,0 +1,51 @@
+---
+title: "RA_Aynch(3)_2048046"
+author: "R Akhilandeshwari"
+date: "2/20/2021"
+output: word_document
+---
+
+###Consider the given data and solve the following questions
+
+**a) Fit the multi linear regression model.**
+**b) Construct the ANOVA table for the test of significance of regression coefficients**
+**c) Calculate the t statistics for testing the hypothesis for significance of the regression coefficients**
+**d) Calculate the R^2 and Adj.R^2  for the model**
+
+```{r}
+setwd('C:/Desktop/RA/')
+getwd()
+```
+```{r}
+library(readxl)
+pd<-read_excel('PEANUTS_DATA.xlsx')
+pd
+```
+```{r}
+complete.cases(pd)
+```
+**a) Fit the multi linear regression model.**
+```{r}
+model=lm(YIELD~.,data=pd)
+summary(model)
+```
+
+
+**b) Construct the ANOVA table for the test of significance of regression coefficients**
+```{r}
+library(car)
+sstable <- Anova(model, type = 3)
+sstable
+```
+
+
+**c) Calculate the t statistics for testing the hypothesis for significance of the regression coefficients**
+**d) Calculate the R^2 and Adj.R^2  for the model**
+```{r}
+summary(model)
+```
+**INFERENCE:**
+*The t-statistic values of Average Yield value, Temperature and Particle size says that they have significant effect on the Yield. Whereas the Pressure, Moisture and flow rate are not that significant for the yield. The adjusted R^2 value is significantly high implies 93% influence factor of the regression coefficient. The adjusted R^2 value is 90.58%. Even the ANOVA table infers the same information.*
+
+
+
